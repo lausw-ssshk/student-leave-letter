@@ -142,6 +142,26 @@
       color: var(--ink);
     }
     button.secondary:hover { background: #f7f7f7; }
+    .reason-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    button.chip {
+      padding: 6px 10px;
+      font-size: 0.86rem;
+      border: 1px solid #bdbdbd;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+    }
+    button.chip:hover { background: #f0f6fc; border-color: var(--accent); }
+    button.chip.active {
+      background: #e8f1fb;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
     .hint {
       margin-top: 12px;
       font-size: 0.82rem;
@@ -316,7 +336,23 @@
         </div>
 
         <label class="field"><span class="req">請假理由</span>
-          <input id="reason" type="text" placeholder="例如：身體不適／覆診／家庭事務" />
+          <div class="reason-chips" id="reasonChips" role="group" aria-label="常用請假理由">
+            <button type="button" class="chip" data-reason="身體不適">身體不適</button>
+            <button type="button" class="chip" data-reason="覆診">覆診</button>
+            <button type="button" class="chip" data-reason="家庭事務">家庭事務</button>
+            <button type="button" class="chip" data-reason="出席公開考試">出席公開考試</button>
+            <button type="button" class="chip" data-reason="出席比賽／活動">出席比賽／活動</button>
+            <button type="button" class="chip" data-reason="事假">事假</button>
+          </div>
+          <input id="reason" type="text" list="reason-suggestions" placeholder="點選上方，或自行輸入" autocomplete="off" />
+          <datalist id="reason-suggestions">
+            <option value="身體不適"></option>
+            <option value="覆診"></option>
+            <option value="家庭事務"></option>
+            <option value="出席公開考試"></option>
+            <option value="出席比賽／活動"></option>
+            <option value="事假"></option>
+          </datalist>
         </label>
 
         <div class="grid-2">
@@ -521,14 +557,31 @@
       $("toDate").value = t;
       $("signDate").value = t;
       sync();
+      highlightReasonChip();
     }
+
+    function highlightReasonChip() {
+      const current = ($("reason").value || "").trim();
+      document.querySelectorAll("#reasonChips .chip").forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-reason") === current);
+      });
+    }
+
+    $("reasonChips").addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      $("reason").value = btn.getAttribute("data-reason") || "";
+      highlightReasonChip();
+      sync();
+      $("reason").focus();
+    });
 
     ["klass", "studentNo", "studentName", "letterDate", "days", "reason",
       "fromDate", "fromHalf", "toDate", "toHalf", "attNone", "attMedical",
       "attExam", "attOther", "attOtherText", "parentName", "signDate"
     ].forEach((id) => {
-      $(id).addEventListener("input", sync);
-      $(id).addEventListener("change", sync);
+      $(id).addEventListener("input", () => { if (id === "reason") highlightReasonChip(); sync(); });
+      $(id).addEventListener("change", () => { if (id === "reason") highlightReasonChip(); sync(); });
     });
 
     function fitPreview() {
