@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>慈幼英文學校 · 學生請假信產生器</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --muted: #5a5a5a;
+      --line: #c8c8c8;
+      --bg: #f4f5f7;
+      --card: #ffffff;
+      --accent: #0b5cab;
+      --accent-hover: #094a8a;
+      --danger: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+    header.page-head {
+      margin-bottom: 20px;
+    }
+    header.page-head h1 {
+      margin: 0 0 6px;
+      font-size: 1.45rem;
+      font-weight: 700;
+    }
+    header.page-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 18px 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    label.field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    label.field span.req::after {
+      content: " *";
+      color: var(--danger);
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      font: inherit;
+      color: var(--ink);
+      border: 1px solid #bdbdbd;
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: #fff;
+      width: 100%;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid rgba(11,92,171,.25);
+      border-color: var(--accent);
+    }
+    .checks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 4px 0 12px;
+    }
+    .checks label {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.92rem;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    button {
+      font: inherit;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover { background: var(--accent-hover); }
+    button.secondary {
+      background: #fff;
+      border-color: #bdbdbd;
+      color: var(--ink);
+    }
+    button.secondary:hover { background: #f7f7f7; }
+    .hint {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    /* Letter preview / print sheet */
+    .preview-wrap {
+      background: #e8e8e8;
+      border-radius: 12px;
+      padding: 16px;
+      overflow: auto;
+    }
+    .letter {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      color: #000;
+      padding: 22mm 20mm 18mm;
+      box-shadow: 0 2px 10px rgba(0,0,0,.12);
+      font-family: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif;
+      font-size: 15.5pt;
+      line-height: 1.85;
+      position: relative;
+    }
+    .letter .meta {
+      text-align: right;
+      font-size: 13.5pt;
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+    .letter .meta div { margin: 0; }
+    .letter h1.title {
+      text-align: center;
+      font-size: 22pt;
+      font-weight: 700;
+      margin: 8px 0 28px;
+      text-decoration: underline;
+      text-underline-offset: 6px;
+      letter-spacing: 0.15em;
+    }
+    .letter .body p {
+      margin: 0 0 0.35em;
+      text-indent: 0;
+    }
+    .letter .fill {
+      display: inline-block;
+      min-width: 2.5em;
+      border-bottom: 1px solid #000;
+      padding: 0 4px;
+      text-align: center;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+    .letter .fill.wide { min-width: 8em; }
+    .letter .fill.xwide { min-width: 14em; }
+    .letter .enclosures {
+      margin: 22px 0 28px;
+      font-size: 13.5pt;
+      line-height: 1.7;
+    }
+    .letter .enclosures .opt {
+      margin-left: 1.2em;
+    }
+    .letter .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 28px;
+      font-size: 14pt;
+      line-height: 1.8;
+    }
+    .letter .to {
+      align-self: start;
+    }
+    .letter .sign {
+      text-align: left;
+      justify-self: end;
+      width: 100%;
+      max-width: 16em;
+    }
+    .letter .sign-line {
+      border-bottom: 1px solid #000;
+      min-height: 1.4em;
+      margin: 4px 0 10px;
+    }
+    .letter .remarks {
+      margin-top: 36px;
+      font-size: 11pt;
+      line-height: 1.55;
+      color: #222;
+    }
+    .letter .remarks strong {
+      font-weight: 700;
+    }
+    .box { display: inline-block; width: 1.05em; text-align: center; font-family: sans-serif; }
+
+    @media print {
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .app { max-width: none; padding: 0; margin: 0; }
+      .layout { display: block; }
+      .preview-wrap {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        overflow: visible;
+      }
+      .letter {
+        box-shadow: none;
+        width: auto;
+        min-height: auto;
+        padding: 12mm 16mm;
+        margin: 0;
+      }
+      @page {
+        size: A4;
+        margin: 12mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="page-head no-print">
+      <h1>學生請假信產生器</h1>
+      <p>依慈幼英文學校「學生請假信」格式填寫，預覽後可列印或另存為 PDF。</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel no-print">
+        <h2>填寫資料</h2>
+
+        <div class="grid-2">
+          <label class="field"><span class="req">班別</span>
+            <input id="klass" type="text" list="klass-list" placeholder="例如 6A" value="6A" />
+            <datalist id="klass-list">
+              <option value="6A"></option>
+              <option value="6B"></option>
+              <option value="6C"></option>
+              <option value="6D"></option>
+            </datalist>
+          </label>
+          <label class="field"><span class="req">學號</span>
+            <input id="studentNo" type="text" inputmode="numeric" placeholder="例如 12" />
+          </label>
+        </div>
+
+        <label class="field"><span class="req">學生姓名</span>
+          <input id="studentName" type="text" placeholder="中文或英文姓名" />
+        </label>
+
+        <div class="grid-2">
+          <label class="field"><span class="req">請假日期（信頭）</span>
+            <input id="letterDate" type="date" />
+          </label>
+          <label class="field"><span class="req">請假日數</span>
+            <input id="days" type="number" min="0.5" step="0.5" value="1" />
+          </label>
+        </div>
+
+        <label class="field"><span class="req">請假理由</span>
+          <input id="reason" type="text" placeholder="例如：身體不適／覆診／家庭事務" />
+        </label>
+
+        <div class="grid-2">
+          <label class="field"><span class="req">由（開始日期）</span>
+            <input id="fromDate" type="date" />
+          </label>
+          <label class="field"><span>開始時段</span>
+            <select id="fromHalf">
+              <option value="上">上午</option>
+              <option value="下">下午</option>
+            </select>
+          </label>
+          <label class="field"><span class="req">至（結束日期）</span>
+            <input id="toDate" type="date" />
+          </label>
+          <label class="field"><span>結束時段</span>
+            <select id="toHalf">
+              <option value="下" selected>下午</option>
+              <option value="上">上午</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field" style="margin-bottom:6px"><span>隨函附上（可多選）</span></label>
+        <div class="checks">
+          <label><input type="checkbox" id="attNone" /> 沒有證明書</label>
+          <label><input type="checkbox" id="attMedical" /> 醫生病假證明書</label>
+          <label><input type="checkbox" id="attExam" /> 公開考試或比賽證明書</label>
+          <label><input type="checkbox" id="attOther" /> 其他證明文件</label>
+        </div>
+        <label class="field"><span>其他證明文件說明</span>
+          <input id="attOtherText" type="text" placeholder="若選「其他」，請填寫內容" />
+        </label>
+
+        <label class="field"><span>家長／監護人姓名</span>
+          <input id="parentName" type="text" placeholder="可留空，稍後手寫" />
+        </label>
+
+        <div class="grid-2">
+          <label class="field"><span>簽署日期</span>
+            <input id="signDate" type="date" />
+          </label>
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="primary" id="btnPrint">列印／另存 PDF</button>
+          <button type="button" class="secondary" id="btnClear">清空</button>
+        </div>
+        <p class="hint">提示：按「列印／另存 PDF」後，在列印對話框選擇「另存為 PDF」或「Save as PDF」。簽署欄請家長親筆簽名。</p>
+      </section>
+
+      <section class="preview-wrap" aria-label="請假信預覽">
+        <article class="letter" id="letter">
+          <div class="meta">
+            <div>班別／學號：<span class="fill" id="vKlassNo">　　／　　</span></div>
+            <div>請假日期：<span class="fill wide" id="vLetterDate">　　年　　月　　日</span></div>
+          </div>
+          <h1 class="title">學生請假信</h1>
+          <div class="body">
+            <p>敬啟者：敝子弟 <span class="fill wide" id="vName">　　　　　　</span></p>
+            <p>因 <span class="fill xwide" id="vReason">　　　　　　　　　　</span></p>
+            <p>請假 <span class="fill" id="vDays">　　</span> 天，</p>
+            <p>
+              由 <span class="fill" id="vFromY">　　</span> 年
+              <span class="fill" id="vFromM">　　</span> 月
+              <span class="fill" id="vFromD">　　</span> 日（<span id="vFromHalf">　</span>）
+              至
+              <span class="fill" id="vToM">　　</span> 月
+              <span class="fill" id="vToD">　　</span> 日（<span id="vToHalf">　</span>）止，
+            </p>
+            <p>敬希照准。</p>
+          </div>
+
+          <div class="enclosures">
+            <div>隨函附上：（請 ✓ 選擇）</div>
+            <div class="opt"><span class="box" id="bNone">□</span> 沒有證明書</div>
+            <div class="opt"><span class="box" id="bMedical">□</span> 醫生病假證明書</div>
+            <div class="opt"><span class="box" id="bExam">□</span> 公開考試或比賽證明書</div>
+            <div class="opt"><span class="box" id="bOther">□</span> 其他證明文件：<span class="fill wide" id="vOther">　　　　　　</span></div>
+          </div>
+
+          <div class="footer-grid">
+            <div class="to">
+              <div>此致</div>
+              <div>慈幼英文學校校長</div>
+            </div>
+            <div class="sign">
+              <div>家長／監護人簽署：</div>
+              <div class="sign-line"></div>
+              <div>家長／監護人姓名：</div>
+              <div class="sign-line" id="vParentName"></div>
+              <div>
+                <span class="fill" id="vSignY">　　</span> 年
+                <span class="fill" id="vSignM">　　</span> 月
+                <span class="fill" id="vSignD">　　</span> 日
+              </div>
+            </div>
+          </div>
+
+          <div class="remarks">
+            <strong>備註：</strong><br />
+            1. 學生須於回校上課當日將請假信交回校務處。<br />
+            2. 如學生請病假一天，只須家長信；如病假超過一天，則須同時提交家長信及醫生證明書。
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function pad2(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+
+    function parseYMD(iso) {
+      if (!iso) return null;
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+      if (!m) return null;
+      return { y: m[1], m: String(Number(m[2])), d: String(Number(m[3])) };
+    }
+
+    function mark(el, on) {
+      el.textContent = on ? "✓" : "□";
+    }
+
+    function blank(s, fallback) {
+      const t = (s || "").trim();
+      return t || fallback;
+    }
+
+    function sync() {
+      const klass = blank($("klass").value, "　　");
+      const no = blank($("studentNo").value, "　　");
+      $("vKlassNo").textContent = `${klass}／${no}`;
+
+      const ld = parseYMD($("letterDate").value);
+      $("vLetterDate").textContent = ld
+        ? `${ld.y} 年 ${ld.m} 月 ${ld.d} 日`
+        : "　　年　　月　　日";
+
+      $("vName").textContent = blank($("studentName").value, "　　　　　　");
+      $("vReason").textContent = blank($("reason").value, "　　　　　　　　　　");
+      $("vDays").textContent = blank($("days").value, "　　");
+
+      const from = parseYMD($("fromDate").value);
+      const to = parseYMD($("toDate").value);
+      $("vFromY").textContent = from ? from.y : "　　";
+      $("vFromM").textContent = from ? from.m : "　　";
+      $("vFromD").textContent = from ? from.d : "　　";
+      $("vFromHalf").textContent = $("fromHalf").value || "　";
+      $("vToM").textContent = to ? to.m : "　　";
+      $("vToD").textContent = to ? to.d : "　　";
+      $("vToHalf").textContent = $("toHalf").value || "　";
+
+      mark($("bNone"), $("attNone").checked);
+      mark($("bMedical"), $("attMedical").checked);
+      mark($("bExam"), $("attExam").checked);
+      mark($("bOther"), $("attOther").checked);
+      $("vOther").textContent = blank($("attOtherText").value, "　　　　　　");
+
+      $("vParentName").textContent = blank($("parentName").value, "");
+
+      const sd = parseYMD($("signDate").value);
+      $("vSignY").textContent = sd ? sd.y : "　　";
+      $("vSignM").textContent = sd ? sd.m : "　　";
+      $("vSignD").textContent = sd ? sd.d : "　　";
+    }
+
+    function clearForm() {
+      ["studentNo", "studentName", "reason", "attOtherText", "parentName"].forEach((id) => {
+        $(id).value = "";
+      });
+      $("klass").value = "6A";
+      $("days").value = "1";
+      $("fromHalf").value = "上";
+      $("toHalf").value = "下";
+      ["attNone", "attMedical", "attExam", "attOther"].forEach((id) => {
+        $(id).checked = false;
+      });
+      const t = todayISO();
+      $("letterDate").value = t;
+      $("fromDate").value = t;
+      $("toDate").value = t;
+      $("signDate").value = t;
+      sync();
+    }
+
+    ["klass", "studentNo", "studentName", "letterDate", "days", "reason",
+      "fromDate", "fromHalf", "toDate", "toHalf", "attNone", "attMedical",
+      "attExam", "attOther", "attOtherText", "parentName", "signDate"
+    ].forEach((id) => {
+      $(id).addEventListener("input", sync);
+      $(id).addEventListener("change", sync);
+    });
+
+    $("btnPrint").addEventListener("click", () => {
+      sync();
+      window.print();
+    });
+    $("btnClear").addEventListener("click", clearForm);
+
+    clearForm();
+  </script>
+</body>
+</html>
