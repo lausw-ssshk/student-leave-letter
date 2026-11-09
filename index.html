@@ -99,6 +99,11 @@
       outline: 2px solid rgba(11,92,171,.25);
       border-color: var(--accent);
     }
+    input:disabled {
+      background: #f0f0f0;
+      color: #888;
+      cursor: not-allowed;
+    }
     .checks {
       display: flex;
       flex-direction: column;
@@ -343,7 +348,7 @@
           <label><input type="checkbox" id="attOther" /> 其他證明文件</label>
         </div>
         <label class="field"><span>其他證明文件說明</span>
-          <input id="attOtherText" type="text" placeholder="若選「其他」，請填寫內容" />
+          <input id="attOtherText" type="text" placeholder="勾選「其他證明文件」後才可填寫" disabled />
         </label>
 
         <label class="field"><span>家長／監護人姓名</span>
@@ -451,7 +456,15 @@
       return t || fallback;
     }
 
+    function updateOtherTextEnabled() {
+      const on = $("attOther").checked;
+      const input = $("attOtherText");
+      input.disabled = !on;
+      if (!on) input.value = "";
+    }
+
     function sync() {
+      updateOtherTextEnabled();
       const klass = blank($("klass").value, "　　");
       const no = blank($("studentNo").value, "　　");
       $("vKlassNo").textContent = `${klass}／${no}`;
@@ -500,6 +513,8 @@
       ["attNone", "attMedical", "attExam", "attOther"].forEach((id) => {
         $(id).checked = false;
       });
+      $("attOtherText").value = "";
+      $("attOtherText").disabled = true;
       const t = todayISO();
       $("letterDate").value = t;
       $("fromDate").value = t;
